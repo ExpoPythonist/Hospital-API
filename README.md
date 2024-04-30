@@ -72,15 +72,15 @@ request body:
 {
     "user_data": {
         "username": "doctor5",
-        "first_name": "Dr. Deal",
-        "last_name": "Walker",
-        "password":"doctoraccess1234",
-        "password2":"doctoraccess1234"
+        "first_name": "Dr. Jhon",
+        "last_name": "Doe",
+        "password":"doctorpass123",
+        "password2":"doctorpass123"
     },
     "profile_data": {
         "department": "CL",
-        "address": "Dortmund",
-        "mobile": "12312343424"
+        "address": "Bangladesh",
+        "mobile": "123123434252"
     }
 }
 ```
@@ -89,13 +89,13 @@ response body:
 {
     "user_data": {
         "username": "doctor5",
-        "first_name": "Dr. Deal",
-        "last_name": "Walker"
+        "first_name": "Dr. Jhon",
+        "last_name": "Doe"
     },
     "profile_data": {
         "department": "CL",
-        "address": "Dortmund",
-        "mobile": "12312343424"
+        "address": "Bangladesh",
+        "mobile": "123123434252"
     }
 }
 ```
@@ -110,13 +110,13 @@ request body:
 ```json
 {
     "username": "doctor7",
-    "password": "doctoraccess1234"
+    "password": "doctorpass1234"
 }
 ```
 response body:
 ```json
 {
-    "token": "e617d20f74709f1d2098076696e026f602cef5b9"
+    "token": "e617d20f74709f1d2097876696e026f602cef5b9"
 }
 ```
 **GET api/doctor/profile/**
@@ -175,11 +175,11 @@ response:
     {
         "patient_name": "patient one",
         "patient_age": 25.5,
-        "appointment_date": "2021-07-07",
+        "appointment_date": "2024-04-30",
         "appointment_time": "09:33:38",
         "patient_history": {
-            "admit_date": "2021-07-06",
-            "symptomps": "Pain",
+            "admit_date": "2024-04-30",
+            "symptoms": "Pain",
             "department": "CL",
             "release_date": null,
             "assigned_doctor": "doctor7 (CL)"
@@ -299,8 +299,8 @@ response:
 ```json
 [
     {
-        "admit_date": "2021-07-07",
-        "symptomps": "Pain.cough",
+        "admit_date": "2024-04-30",
+        "symptoms": "Pain.cough",
         "department": "CL",
         "release_date": null,
         "assigned_doctor": "doctor3 (CL)",
@@ -324,14 +324,14 @@ response:
 [
     {
         "id": 14,
-        "appointment_date": "2021-07-18",
+        "appointment_date": "2024-04-30",
         "appointment_time": "16:33:27",
         "status": true,
         "doctor": 5
     },
     {
         "id": 16,
-        "appointment_date": "2021-07-18",
+        "appointment_date": "2024-04-30",
         "appointment_time": "16:33:27",
         "status": true,
         "doctor": 5
@@ -346,7 +346,7 @@ Details: API endpoint for creating an appointment request. Token authentication 
 request:
 ```json
 {
-        "appointment_date": "2021-07-18",
+        "appointment_date": "2024-04-30",
         "appointment_time": "16:33:27",
         "doctor": 5
 }
@@ -356,7 +356,7 @@ response:
 ```json
 {
     "id": 18,
-    "appointment_date": "2021-07-18",
+    "appointment_date": "2024-04-30",
     "appointment_time": "16:33:27",
     "status": false,
     "doctor": 5
@@ -709,7 +709,7 @@ response:
 ```json
 {
     "doctors": {
-        "id": "e942f267-ed39-46a7-a010-5db53813e664",
+        "id": "e942f267-ed39-46a7-a010-5db53813e665",
         "username": "doctor2",
         "first_name": "doctor2",
         "last_name": "two",
@@ -794,7 +794,7 @@ request:
     },
     "profile_data": {
         "age": "45",
-        "address": "Rangpur",
+        "address": "Dhaka",
         "mobile": "12312343424"
     }
 }
@@ -806,11 +806,11 @@ response:
     "user_data": {
         "username": "patient3",
         "first_name": "patient3",
-        "last_name": "three",
+        "last_name": "three"
     },
     "profile_data": {
         "age": "45",
-        "address": "Rangpur",
+        "address": "Dhaka",
         "mobile": "12312343424"
     }
 }
@@ -831,7 +831,7 @@ Details: API endpoint for getting all the patients account.  only approved patie
             "last_name": "one",
             "status": true,
             "patient": {
-                "age": "25.5",
+                "age": "25",
                 "address": "Rajshahi",
                 "mobile": "9999"
             }
@@ -867,7 +867,7 @@ Details: API endpoint for getting all the patients account.  only approved patie
             "last_name": "ten",
             "status": true,
             "patient": {
-                "age": "45.0",
+                "age": "45",
                 "address": "Rangpur",
                 "mobile": "12312343424"
             }
@@ -890,7 +890,7 @@ response:
         "last_name": "one",
         "status": true,
         "patient": {
-            "age": "25.5",
+            "age": "25",
             "address": "Rajshahi",
             "mobile": "9999"
         }
@@ -959,8 +959,8 @@ response:
     "patient_history": [
         {
             "id": 8,
-            "admit_date": "2021-07-07",
-            "symptomps": "Fever,cough",
+            "admit_date": "2024-04-30",
+            "symptoms": "Fever,cough",
             "department": "EMC",
             "release_date": null,
             "assigned_doctor": 5,
@@ -978,15 +978,15 @@ response:
 
 **GET api/admin/patient/:uuid/history/:id/**
 
-Details: API endpoint for getting speicific history for specific patient.Token authentication required.
+Details: API endpoint for getting specific history for specific patient.Token authentication required.
 
 response:
 ```json
 {
     "patient_history": {
         "id": 8,
-        "admit_date": "2021-07-07",
-        "symptomps": "Fever,cough",
+        "admit_date": "2024-04-30",
+        "symptoms": "Fever,cough",
         "department": "EMC",
         "release_date": null,
         "assigned_doctor": 5,
@@ -1010,8 +1010,8 @@ request:
 {
     "patient_history": {
         "id": 8,
-        "admit_date": "2021-07-07",
-        "symptomps": "Fever,cough,toncil",
+        "admit_date": "2024-04-30",
+        "symptoms": "Fever,cough,toncil",
         "department": "EMC",
         "assigned_doctor": 5,
         "costs": {
@@ -1030,8 +1030,8 @@ response:
 {
     "patient_history": {
         "id": 8,
-        "admit_date": "2021-07-07",
-        "symptomps": "Fever,cough,toncil",
+        "admit_date": "2024-04-30",
+        "symptoms": "Fever,cough,toncil",
         "department": "EMC",
         "release_date": null,
         "assigned_doctor": 5,
@@ -1066,7 +1066,7 @@ request:
 ```json
 {
     "appointments": {
-        "appointment_date": "2021-07-06",
+        "appointment_date": "2024-04-30",
         "appointment_time": "05:51:59",
         "patient_history": 9,
         "doctor": 9
@@ -1084,7 +1084,7 @@ response:
     "appointments": [
         {
             "id": 13,
-            "appointment_date": "2021-07-06",
+            "appointment_date": "2024-04-30",
             "appointment_time": "05:51:59",
             "status": true,
             "patient_history": 9,
@@ -1102,7 +1102,7 @@ response:
 {
     "appointments": {
         "id": 13,
-        "appointment_date": "2021-07-06",
+        "appointment_date": "2024-04-30",
         "appointment_time": "05:51:59",
         "status": true,
         "patient_history": 9,
@@ -1118,7 +1118,7 @@ request:
 ```json
 {
     "appointments": {
-        "appointment_date": "2021-08-06",
+        "appointment_date": "2024-04-30",
         "appointment_time": "05:02:59",
         "status": true,
         "patient_history": 9,
@@ -1131,7 +1131,7 @@ response:
 {
     "appointments": {
         "id": 13,
-        "appointment_date": "2021-08-06",
+        "appointment_date": "2024-04-30",
         "appointment_time": "05:02:59",
         "status": true,
         "patient_history": 9,
@@ -1162,7 +1162,7 @@ response:
     "appointments": [
         {
             "id": 15,
-            "appointment_date": "2021-07-24",
+            "appointment_date": "2024-04-30",
             "appointment_time": "06:00:00",
             "status": false,
             "patient_history": 9,
@@ -1170,7 +1170,7 @@ response:
         },
         {
             "id": 17,
-            "appointment_date": "2021-07-18",
+            "appointment_date": "2024-04-30",
             "appointment_time": "16:33:27",
             "status": false,
             "patient_history": 9,
@@ -1178,7 +1178,7 @@ response:
         },
         {
             "id": 18,
-            "appointment_date": "2021-07-18",
+            "appointment_date": "2024-04-30",
             "appointment_time": "16:33:27",
             "status": false,
             "patient_history": 9,
@@ -1197,7 +1197,7 @@ response:
 {
     "appointments": {
         "id": 15,
-        "appointment_date": "2021-07-24",
+        "appointment_date": "2024-04-30",
         "appointment_time": "06:00:00",
         "status": false,
         "patient_history": 9,
@@ -1214,7 +1214,7 @@ request:
 ```json
 {
     "appointments": {
-        "appointment_date": "2021-07-24",
+        "appointment_date": "2024-04-30",
         "appointment_time": "06:00:00",
         "status": true,
         "patient_history": 9,
@@ -1228,7 +1228,7 @@ response:
 {
     "appointments": {
         "id": 15,
-        "appointment_date": "2021-07-24",
+        "appointment_date": "2024-04-30",
         "appointment_time": "06:00:00",
         "status": true,
         "patient_history": 9,
@@ -1244,7 +1244,7 @@ Details:API endpoint for deleting an appointment request. Token authentication r
 response:
 ```json
 {
-    "message": "Appointment with id `15` has been deleted."
+    "message": "Appointment with id `1` has been deleted."
 }
 ```
 

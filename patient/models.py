@@ -3,8 +3,6 @@ from account.models import User
 from doctor.models import Doctor
 
 
-# Create your models here.
-
 class Patient(models.Model):
     age = models.DecimalField(max_digits=4, decimal_places=1)
     address = models.TextField()

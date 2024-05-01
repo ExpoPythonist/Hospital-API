@@ -1,13 +1,11 @@
-from rest_framework.views import APIView
-from .serializers import (patientRegistrationSerializer,
-                          patientProfileSerializer,
-                          patientHistorySerializer,
-                          appointmentSerializerPatient)
+from .serializers import (PatientRegistrationSerializer,
+                          PatientProfileSerializer,
+                          PatientHistorySerializer,
+                          AppointmentPatientSerializer)
 
-from django.http import Http404
 from rest_framework.views import APIView
 from rest_framework.response import Response
-from rest_framework import serializers, status
+from rest_framework import status
 from patient.models import Patient, History, Appointment
 from rest_framework.authtoken.views import ObtainAuthToken
 from rest_framework.authtoken.models import Token
@@ -30,17 +28,17 @@ class CustomAuthToken(ObtainAuthToken):
         serializer.is_valid(raise_exception=True)
         user = serializer.validated_data['user']
         account_approval = user.groups.filter(name='patient').exists()
-        if user.status == False:
+        if not user.status:
             return Response(
                 {
-                    'message': "Your account is not approved by hospital-admin yet!"
+                    'message': "Your account is not approved by admin yet!"
                 },
                 status=status.HTTP_403_FORBIDDEN
             )
-        elif account_approval == False:
+        elif not account_approval:
             return Response(
                 {
-                    'message': "You are not authorised to login as a patient"
+                    'message': "You are not authorized to login as a patient"
                 },
                 status=status.HTTP_403_FORBIDDEN
             )
@@ -51,93 +49,128 @@ class CustomAuthToken(ObtainAuthToken):
             }, status=status.HTTP_200_OK)
 
 
-class registrationView(APIView):
+class RegistrationView(APIView):
     """"API endpoint for Patient Registration"""
 
     permission_classes = []
 
     def post(self, request, format=None):
-        registrationSerializer = patientRegistrationSerializer(
-            data=request.data.get('user_data'))
-        profileSerializer = patientProfileSerializer(
-            data=request.data.get('profile_data'))
-        checkregistration = registrationSerializer.is_valid()
-        checkprofile = profileSerializer.is_valid()
-        if checkregistration and checkprofile:
-            patient = registrationSerializer.save()
-            profileSerializer.save(user=patient)
-            return Response({
-                'user_data': registrationSerializer.data,
-                'profile_data': profileSerializer.data
-            }, status=status.HTTP_201_CREATED)
+        registration_serializer = PatientRegistrationSerializer(data=request.data.get('user_data'))
+        profile_serializer = PatientProfileSerializer(data=request.data.get('profile_data'))
+
+        check_registration = registration_serializer.is_valid()
+        check_profile = profile_serializer.is_valid()
+
+        if check_registration and check_profile:
+            patient = registration_serializer.save()
+            profile_serializer.save(user=patient)
+            return Response({'user_data': registration_serializer.data,
+                             'profile_data': profile_serializer.data
+                             }, status=status.HTTP_201_CREATED)
         else:
             return Response({
-                'user_data': registrationSerializer.errors,
-                'profile_data': profileSerializer.errors
+                'user_data': registration_serializer.errors,
+                'profile_data': profile_serializer.errors
             }, status=status.HTTP_400_BAD_REQUEST)
 
 
-class patientProfileView(APIView):
-    """"API endpoint for Patient profile view/update-- Only accessble by patients"""
+class PatientProfileView(APIView):
+    """
+    API endpoint for Patient profile view/update -- Only accessible by patients
+    """
     permission_classes = [IsPatient]
 
     def get(self, request, format=None):
-        user = request.user
-        profile = Patient.objects.filter(user=user).get()
-        userSerializer = patientRegistrationSerializer(user)
-        profileSerializer = patientProfileSerializer(profile)
-        return Response({
-            'user_data': userSerializer.data,
-            'profile_data': profileSerializer.data
+        profile = Patient.objects.get(user=request.user)
 
+        # Serialize user data and profile data separately
+        user_serializer = PatientRegistrationSerializer(request.user)
+        profile_serializer = PatientProfileSerializer(profile)
+
+        return Response({
+            'user_data': user_serializer.data,
+            'profile_data': profile_serializer.data
         }, status=status.HTTP_200_OK)
 
     def put(self, request, format=None):
-        user = request.user
-        profile = Patient.objects.filter(user=user).get()
-        profileSerializer = patientProfileSerializer(
-            instance=profile, data=request.data.get('profile_data'), partial=True)
-        if profileSerializer.is_valid():
-            profileSerializer.save()
+        profile = Patient.objects.get(user=request.user)
+        profile_serializer = PatientProfileSerializer(instance=profile, data=request.data.get('profile_data'),
+                                                      partial=True)
+
+        if profile_serializer.is_valid():
+            # Save the updated profile data
+            profile_serializer.save()
             return Response({
-                'profile_data': profileSerializer.data
+                'profile_data': profile_serializer.data
             }, status=status.HTTP_200_OK)
-        return Response({
-            'profile_data': profileSerializer.errors
-        }, status=status.HTTP_400_BAD_REQUEST)
+        else:
+            return Response({
+                'profile_data': profile_serializer.errors
+            }, status=status.HTTP_400_BAD_REQUEST)
 
 
-class patientHistoryView(APIView):
-    """"API endpoint for Patient history and costs view- Only accessble by patients"""
+class PatientHistoryView(APIView):
+    """"API endpoint for Patient history and costs view Only accessible by patients"""
     permission_classes = [IsPatient]
 
     def get(self, request, format=None):
         user = request.user
         user_patient = Patient.objects.filter(user=user).get()
         history = History.objects.filter(patient=user_patient)
-        historySerializer = patientHistorySerializer(history, many=True)
-        return Response(historySerializer.data, status=status.HTTP_200_OK)
+        history_serializer = PatientHistorySerializer(history, many=True)
+        return Response(history_serializer.data, status=status.HTTP_200_OK)
 
 
-class appointmentViewPatient(APIView):
-    """"API endpoint for getting appointments details, creating appointment"""
+class AppointmentViewPatient(APIView):
+    """
+    API endpoint for getting appointment details and creating appointments.
+    """
     permission_classes = [IsPatient]
 
     def get(self, request, pk=None, format=None):
-        user = request.user
-        user_patient = Patient.objects.filter(user=user).get()
-        history = History.objects.filter(patient=user_patient).latest('admit_date')
-        appointment = Appointment.objects.filter(status=True, patient_history=history)
-        historySerializer = appointmentSerializerPatient(appointment, many=True)
-        return Response(historySerializer.data, status=status.HTTP_200_OK)
+        """
+        Get appointments details for the current patient.
+        """
+        try:
+            user_patient = Patient.objects.get(user=request.user)
+            history = History.objects.filter(patient=user_patient).latest('admit_date')
+            appointment = Appointment.objects.filter(status=True, patient_history=history)
+            history_serializer = AppointmentPatientSerializer(appointment, many=True)
+            return Response(history_serializer.data, status=status.HTTP_200_OK)
+        except (Patient.DoesNotExist, History.DoesNotExist):
+            return Response({"error": "Patient or History not found"}, status=status.HTTP_404_NOT_FOUND)
+        except Exception as e:
+            return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
     def post(self, request, format=None):
-        user = request.user
-        user_patient = Patient.objects.filter(user=user).get()
-        history = History.objects.filter(patient=user_patient).latest('admit_date')
-        serializer = appointmentSerializerPatient(
-            data=request.data)
-        if serializer.is_valid():
-            serializer.save(patient_history=history)
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        """
+        Create a new appointment for the current patient.
+        """
+        try:
+            user_patient = Patient.objects.get(user=request.user)
+            history = History.objects.filter(patient=user_patient).latest('admit_date')
+            serializer = AppointmentPatientSerializer(data=request.data)
+            if serializer.is_valid():
+                serializer.save(patient_history=history)
+                return Response(serializer.data, status=status.HTTP_201_CREATED)
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        except (Patient.DoesNotExist, History.DoesNotExist):
+            return Response({"error": "Patient or History not found"}, status=status.HTTP_404_NOT_FOUND)
+        except Exception as e:
+            return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+    def delete(self, request, pk=None, format=None):
+        """
+        Delete an appointment for the current patient.
+        """
+        try:
+            user_patient = Patient.objects.get(user=request.user)
+            history = History.objects.filter(patient=user_patient).latest('admit_date')
+            appointment = Appointment.objects.get(pk=pk, patient_history=history)
+            appointment.delete()
+            return Response(status=status.HTTP_204_NO_CONTENT)
+        except (Patient.DoesNotExist, History.DoesNotExist, Appointment.DoesNotExist):
+            return Response({"error": "Patient, History, or Appointment not found"},
+                            status=status.HTTP_404_NOT_FOUND)
+        except Exception as e:
+            return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)

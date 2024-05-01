@@ -18,6 +18,7 @@ from .serializers import (DoctorAccountSerializerAdmin,
                           PatientAccountSerializerAdmin,
                           PatientHistorySerializerAdmin)
 
+
 class IsAdmin(BasePermission):
     """custom Permission class for Admin"""
 
@@ -48,34 +49,33 @@ class CustomAuthToken(ObtainAuthToken):
         }, status=status.HTTP_200_OK)
 
 
-class docregistrationViewAdmin(APIView):
-    """API endpoint for creating doctor account- only accessible by Admin"""
+class DocRegistrationViewAdmin(APIView):
+    """API endpoint for creating doctor account only accessible by Admin"""
 
     permission_classes = [IsAdmin]
 
     def post(self, request, format=None):
-        registrationSerializer = DoctorRegistrationSerializerAdmin(
-            data=request.data.get('user_data'))
-        profileSerializer = DoctorRegistrationProfileSerializerAdmin(
-            data=request.data.get('profile_data'))
-        checkregistration = registrationSerializer.is_valid()
-        checkprofile = profileSerializer.is_valid()
-        if checkregistration and checkprofile:
-            doctor = registrationSerializer.save()
-            profileSerializer.save(user=doctor)
+        registration_serializer = DoctorRegistrationSerializerAdmin(data=request.data.get('user_data'))
+        profile_serializer = DoctorRegistrationProfileSerializerAdmin(data=request.data.get('profile_data'))
+        check_registration = registration_serializer.is_valid()
+        check_profile = profile_serializer.is_valid()
+
+        if check_registration and check_profile:
+            doctor = registration_serializer.save()
+            profile_serializer.save(user=doctor)
             return Response({
-                'user_data': registrationSerializer.data,
-                'profile_data': profileSerializer.data
+                'user_data': registration_serializer.data,
+                'profile_data': profile_serializer.data
             }, status=status.HTTP_201_CREATED)
         else:
             return Response({
-                'user_data': registrationSerializer.errors,
-                'profile_data': profileSerializer.errors
+                'user_data': registration_serializer.errors,
+                'profile_data': profile_serializer.errors
             }, status=status.HTTP_400_BAD_REQUEST)
 
 
-class doctorAccountViewAdmin(APIView):
-    """API endpoint for getiing info of all/particular doctor,
+class DoctorAccountViewAdmin(APIView):
+    """API endpoint for getting info of all/particular doctor,
      update/delete doctor's info
      - only accessible by Admin"""
 
@@ -115,7 +115,7 @@ class doctorAccountViewAdmin(APIView):
                         status=status.HTTP_204_NO_CONTENT)
 
 
-class approveDoctorViewAdmin(APIView):
+class ApproveDoctorViewAdmin(APIView):
     """API endpoint for getting new doctor approval request, update and delete approval  request.
      - only accessible by Admin"""
 
@@ -155,7 +155,7 @@ class approveDoctorViewAdmin(APIView):
                         status=status.HTTP_204_NO_CONTENT)
 
 
-class approvePatientViewAdmin(APIView):
+class ApprovePatientViewAdmin(APIView):
     """API endpoint for getting new patient request,
      update and delete approval requests.- only accessible by Admin"""
 
@@ -195,7 +195,7 @@ class approvePatientViewAdmin(APIView):
                         status=status.HTTP_204_NO_CONTENT)
 
 
-class appointmentViewAdmin(APIView):
+class AppointmentViewAdmin(APIView):
     """API endpoint for getting info of all/particular appointment,
      update/delete appointment - only accessible by Admin"""
 
@@ -247,7 +247,7 @@ class appointmentViewAdmin(APIView):
                         status=status.HTTP_204_NO_CONTENT)
 
 
-class approveAppointmentViewAdmin(APIView):
+class ApproveAppointmentViewAdmin(APIView):
     """API endpoint for getting info of all/particular unapproved appointment,
      update/delete  unapproved appointment - only accessible by Admin"""
 
@@ -287,34 +287,34 @@ class approveAppointmentViewAdmin(APIView):
                         status=status.HTTP_204_NO_CONTENT)
 
 
-class patientRegistrationViewAdmin(APIView):
-    """API endpoint for creating patients account- only accessible by Admin"""
+class PatientRegistrationViewAdmin(APIView):
+    """API endpoint for creating patients account only accessible by Admin"""
 
     permission_classes = [IsAdmin]
 
     def post(self, request, format=None):
-        registrationSerializer = PatientRegistrationSerializerAdmin(
+        registration_serializer = PatientRegistrationSerializerAdmin(
             data=request.data.get('user_data'))
-        profileSerializer = PatientRegistrationProfileSerializerAdmin(
+        profile_serializer = PatientRegistrationProfileSerializerAdmin(
             data=request.data.get('profile_data'))
-        checkregistration = registrationSerializer.is_valid()
-        checkprofile = profileSerializer.is_valid()
-        if checkregistration and checkprofile:
-            patient = registrationSerializer.save()
-            profileSerializer.save(user=patient)
+        check_registration = registration_serializer.is_valid()
+        check_profile = profile_serializer.is_valid()
+        if check_registration and check_profile:
+            patient = registration_serializer.save()
+            profile_serializer.save(user=patient)
             return Response({
-                'user_data': registrationSerializer.data,
-                'profile_data': profileSerializer.data
+                'user_data': registration_serializer.data,
+                'profile_data': profile_serializer.data
             }, status=status.HTTP_201_CREATED)
         else:
             return Response({
-                'user_data': registrationSerializer.errors,
-                'profile_data': profileSerializer.errors
+                'user_data': registration_serializer.errors,
+                'profile_data': profile_serializer.errors
             }, status=status.HTTP_400_BAD_REQUEST)
 
 
-class patientAccountViewAdmin(APIView):
-    """API endpoint for getiing info of all/particular patient,
+class PatientAccountViewAdmin(APIView):
+    """API endpoint for getting info of all/particular patient,
      update/delete patient's info
      - only accessible by Admin"""
 
@@ -354,7 +354,7 @@ class patientAccountViewAdmin(APIView):
                         status=status.HTTP_204_NO_CONTENT)
 
 
-class patientHistoryViewAdmin(APIView):
+class PatientHistoryViewAdmin(APIView):
     """API endpoint for getting info of all/particular patient's history,
      update/delete patient's history info
      - only accessible by Admin"""
@@ -374,8 +374,8 @@ class patientHistoryViewAdmin(APIView):
             return Response({"message: This history id `{}` does not belong to the user".format(hid)},
                             status=status.HTTP_404_NOT_FOUND)
 
-        patient_historys = user_patient.patient_history_set.all()
-        serializer = PatientHistorySerializerAdmin(patient_historys, many=True)
+        patient_history = user_patient.patient_history.all()
+        serializer = PatientHistorySerializerAdmin(patient_history, many=True)
         return Response({'patient_history': serializer.data}, status=status.HTTP_200_OK)
 
     def put(self, request, pk, hid):

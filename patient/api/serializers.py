@@ -1,13 +1,11 @@
-from django.db.models import fields
-from django.db.models.query import QuerySet
 from rest_framework import serializers
 from account.models import User
-from patient.models import Patient, History, Appointment
+from patient.models import Patient, Appointment
 from django.contrib.auth.models import Group
 from doctor.models import Doctor
 
 
-class patientRegistrationSerializer(serializers.Serializer):
+class PatientRegistrationSerializer(serializers.Serializer):
     username = serializers.CharField(label='Username:')
     first_name = serializers.CharField(label='First name:')
     last_name = serializers.CharField(label='Last name:', required=False)
@@ -48,7 +46,7 @@ class patientRegistrationSerializer(serializers.Serializer):
         return user
 
 
-class patientProfileSerializer(serializers.Serializer):
+class PatientProfileSerializer(serializers.Serializer):
     age = serializers.DecimalField(label="Age:", max_digits=4, decimal_places=1)
     address = serializers.CharField(label="Address:")
     mobile = serializers.CharField(label="Mobile Number:", max_length=20)
@@ -75,7 +73,7 @@ class patientProfileSerializer(serializers.Serializer):
         return instance
 
 
-class patientCostSerializer(serializers.Serializer):
+class PatientCostSerializer(serializers.Serializer):
     room_charge = serializers.IntegerField(label="Room Charge:")
     medicine_cost = serializers.IntegerField(label="Medicine Cost:")
     doctor_fee = serializers.IntegerField(label="Doctor Fee:")
@@ -83,7 +81,7 @@ class patientCostSerializer(serializers.Serializer):
     total_cost = serializers.CharField(label="Total Cost:")
 
 
-class appointmentSerializerPatient(serializers.Serializer):
+class AppointmentPatientSerializer(serializers.Serializer):
     id = serializers.IntegerField(read_only=True)
     appointment_date = serializers.DateField(label='Appointment date')
     appointment_time = serializers.TimeField(label='Appointement time')
@@ -101,7 +99,7 @@ class appointmentSerializerPatient(serializers.Serializer):
         return new_appointment
 
 
-class patientHistorySerializer(serializers.Serializer):
+class PatientHistorySerializer(serializers.Serializer):
     Cardiologist = 'CL'
     Dermatologists = 'DL'
     Emergency_Medicine_Specialists = 'EMC'
@@ -122,5 +120,5 @@ class patientHistorySerializer(serializers.Serializer):
     # required=False; if this field is not required to be present during deserialization.
     release_date = serializers.DateField(label="Release Date:", required=False)
     assigned_doctor = serializers.StringRelatedField(label='Assigned Doctor:')
-    patient_appointments = appointmentSerializerPatient(label="Appointments", many=True)
-    costs = patientCostSerializer()
+    patient_appointments = AppointmentPatientSerializer(label="Appointments", many=True)
+    costs = PatientCostSerializer()

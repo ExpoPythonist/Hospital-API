@@ -5,7 +5,7 @@ from .serializers import (PatientRegistrationSerializer,
 
 from rest_framework.views import APIView
 from rest_framework.response import Response
-from rest_framework import serializers, status
+from rest_framework import status
 from patient.models import Patient, History, Appointment
 from rest_framework.authtoken.views import ObtainAuthToken
 from rest_framework.authtoken.models import Token
@@ -75,36 +75,42 @@ class RegistrationView(APIView):
 
 
 class PatientProfileView(APIView):
-    """"API endpoint for Patient profile view/update-- Only accessble by patients"""
+    """
+    API endpoint for Patient profile view/update -- Only accessible by patients
+    """
     permission_classes = [IsPatient]
 
     def get(self, request, format=None):
-        user = request.user
-        profile = Patient.objects.filter(user=user).get()
-        user_serializer = PatientRegistrationSerializer(user)
+        profile = Patient.objects.get(user=request.user)
+
+        # Serialize user data and profile data separately
+        user_serializer = PatientRegistrationSerializer(request.user)
         profile_serializer = PatientProfileSerializer(profile)
+
         return Response({
             'user_data': user_serializer.data,
             'profile_data': profile_serializer.data
-
         }, status=status.HTTP_200_OK)
 
     def put(self, request, format=None):
-        profile = Patient.objects.filter(user=request.user).get()
+        profile = Patient.objects.get(user=request.user)
         profile_serializer = PatientProfileSerializer(instance=profile, data=request.data.get('profile_data'),
                                                       partial=True)
+
         if profile_serializer.is_valid():
+            # Save the updated profile data
             profile_serializer.save()
             return Response({
                 'profile_data': profile_serializer.data
             }, status=status.HTTP_200_OK)
-        return Response({
-            'profile_data': profile_serializer.errors
-        }, status=status.HTTP_400_BAD_REQUEST)
+        else:
+            return Response({
+                'profile_data': profile_serializer.errors
+            }, status=status.HTTP_400_BAD_REQUEST)
 
 
 class PatientHistoryView(APIView):
-    """"API endpoint for Patient history and costs view- Only accessible by patients"""
+    """"API endpoint for Patient history and costs view Only accessible by patients"""
     permission_classes = [IsPatient]
 
     def get(self, request, format=None):
@@ -116,24 +122,55 @@ class PatientHistoryView(APIView):
 
 
 class AppointmentViewPatient(APIView):
-    """"API endpoint for getting appointments details, creating appointment"""
+    """
+    API endpoint for getting appointment details and creating appointments.
+    """
     permission_classes = [IsPatient]
 
     def get(self, request, pk=None, format=None):
-        user = request.user
-        user_patient = Patient.objects.filter(user=user).get()
-        history = History.objects.filter(patient=user_patient).latest('admit_date')
-        appointment = Appointment.objects.filter(status=True, patient_history=history)
-        history_serializer = AppointmentPatientSerializer(appointment, many=True)
-        return Response(history_serializer.data, status=status.HTTP_200_OK)
+        """
+        Get appointments details for the current patient.
+        """
+        try:
+            user_patient = Patient.objects.get(user=request.user)
+            history = History.objects.filter(patient=user_patient).latest('admit_date')
+            appointment = Appointment.objects.filter(status=True, patient_history=history)
+            history_serializer = AppointmentPatientSerializer(appointment, many=True)
+            return Response(history_serializer.data, status=status.HTTP_200_OK)
+        except (Patient.DoesNotExist, History.DoesNotExist):
+            return Response({"error": "Patient or History not found"}, status=status.HTTP_404_NOT_FOUND)
+        except Exception as e:
+            return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
     def post(self, request, format=None):
-        user = request.user
-        user_patient = Patient.objects.filter(user=user).get()
-        history = History.objects.filter(patient=user_patient).latest('admit_date')
-        serializer = AppointmentPatientSerializer(
-            data=request.data)
-        if serializer.is_valid():
-            serializer.save(patient_history=history)
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        """
+        Create a new appointment for the current patient.
+        """
+        try:
+            user_patient = Patient.objects.get(user=request.user)
+            history = History.objects.filter(patient=user_patient).latest('admit_date')
+            serializer = AppointmentPatientSerializer(data=request.data)
+            if serializer.is_valid():
+                serializer.save(patient_history=history)
+                return Response(serializer.data, status=status.HTTP_201_CREATED)
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        except (Patient.DoesNotExist, History.DoesNotExist):
+            return Response({"error": "Patient or History not found"}, status=status.HTTP_404_NOT_FOUND)
+        except Exception as e:
+            return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+    def delete(self, request, pk=None, format=None):
+        """
+        Delete an appointment for the current patient.
+        """
+        try:
+            user_patient = Patient.objects.get(user=request.user)
+            history = History.objects.filter(patient=user_patient).latest('admit_date')
+            appointment = Appointment.objects.get(pk=pk, patient_history=history)
+            appointment.delete()
+            return Response(status=status.HTTP_204_NO_CONTENT)
+        except (Patient.DoesNotExist, History.DoesNotExist, Appointment.DoesNotExist):
+            return Response({"error": "Patient, History, or Appointment not found"},
+                            status=status.HTTP_404_NOT_FOUND)
+        except Exception as e:
+            return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)

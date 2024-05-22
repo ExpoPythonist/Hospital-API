@@ -113,12 +113,15 @@ class PatientHistoryView(APIView):
     """"API endpoint for Patient history and costs view Only accessible by patients"""
     permission_classes = [IsPatient]
 
-    def get(self, request, format=None):
+def get(self, request, format=None):
+        """
+        Retrieve patient history and costs.
+        """
         user = request.user
-        user_patient = Patient.objects.filter(user=user).get()
-        history = History.objects.filter(patient=user_patient)
-        history_serializer = PatientHistorySerializer(history, many=True)
-        return Response(history_serializer.data, status=status.HTTP_200_OK)
+        patient = get_object_or_404(Patient, user=user)
+        patient_history = History.objects.filter(patient=patient)
+        patient_history_serializer = PatientHistorySerializer(patient_history, many=True)
+        return Response(patient_history_serializer.data, status=HTTP_200_OK)
 
 
 class AppointmentViewPatient(APIView):
